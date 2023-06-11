@@ -62,6 +62,13 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+// Delete URL
+app.post("/urls/:id/delete", (req, res) => {
+  console.log(`Deleting URL ${urlDatabase[req.params.id]}`)
+  delete urlDatabase[req.params.id];
+  res.redirect(`/urls`);
+});
+
 // Function to generate a random string for ID purposes
 const generateRandomString = function(len) {
   let idString = "";

@@ -55,6 +55,12 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
   res.render("urls_show", templateVars);
 });
+// Update the longURL of a URL
+app.post("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  urlDatabase[id] = req.body.updateURL;
+  res.redirect("/urls");
+});
 
 // Redirect users to the associated longURL when they go to the shortURL
 app.get("/u/:id", (req, res) => {
@@ -68,6 +74,8 @@ app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect(`/urls`);
 });
+
+
 
 // Function to generate a random string for ID purposes
 const generateRandomString = function(len) {

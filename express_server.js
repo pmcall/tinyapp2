@@ -2,6 +2,10 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
+// Set EJS as the templating engine
+app.set("view engine", "ejs");
+
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -22,5 +26,12 @@ app.get("/urls.json", (req, res) => {
 
 // Return a friendly greeting to the user :)
 app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+  const templateVars = { greeting: "Hello World!" };
+  res.render("hello_world", templateVars);
+});
+
+// Main page to display index of URLs
+app.get("/urls", (req, res) => {
+  const templateVars = { urls: urlDatabase };
+  res.render("urls_index", templateVars);
 });

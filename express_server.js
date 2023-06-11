@@ -5,6 +5,9 @@ const PORT = 8080; // default port 8080
 // Set EJS as the templating engine
 app.set("view engine", "ejs");
 
+//middlewear to parse the body
+app.use(express.urlencoded({ extended: true }));
+
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -12,7 +15,7 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.send(`Hello! Check out the main page <a href="http://localhost:8080/urls">here</a>`);
 });
 
 app.listen(PORT, () => {
@@ -36,8 +39,36 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// Get and POST for handling new URLs added by the user
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+app.post("/urls", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  let urlKey = generateRandomString(5);
+  urlDatabase[urlKey] = req.body.longURL;
+  res.redirect(`/urls/${urlKey}`);
+});
+
 // Detailed page for individual URL
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
   res.render("urls_show", templateVars);
 });
+
+// Redirect users to the associated longURL when they go to the shortURL
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id]
+  res.redirect(longURL);
+});
+
+// Function to generate a random string for ID purposes
+const generateRandomString = function(len) {
+  let idString = "";
+  const alphaNum = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const idLength = alphaNum.length;
+  for (let i = 0; i <= len; i++) {
+    idString += alphaNum.charAt(Math.floor(Math.random() * idLength));
+  }
+  return idString;
+};

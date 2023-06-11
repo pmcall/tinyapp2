@@ -14,3 +14,8 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+// Display contents of the urlDatabase
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});

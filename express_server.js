@@ -2,6 +2,9 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
+// Import helper
+const userIdLookup = require('./helpers').userIdLookup;
+
 // Set EJS as the templating engine
 app.set("view engine", "ejs");
 
@@ -259,16 +262,6 @@ const userLookup = function(userEmail, userRecords) {
   return null;
 };
 
-// Lookup helper which returns the user object (nested within 'users') if the provided email address is found within it
-const userIdLookup = function(userEmail, userRecords) {
-  for (const user in userRecords) {
-    if (userRecords[user].email === userEmail) {
-      return userRecords[user];
-    }
-  }
-  return null;
-};
-
 // Filters the URL list which the user is allowed access to (only shown their own assigned URLs)
 const urlsForUser = function(id) {
   const filteredUrlList = {};
@@ -279,3 +272,5 @@ const urlsForUser = function(id) {
   }
   return filteredUrlList;
 };
+
+module.exports = urlDatabase;

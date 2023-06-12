@@ -95,6 +95,11 @@ app.post("/login", (req, res) => {
   res.redirect(`/urls`);
 });
 
+// Logout function
+app.post("/logout", (req, res) => {
+  res.clearCookie("username")
+  res.redirect(`/urls`);
+})
 
 // Function to generate a random string for ID purposes
 const generateRandomString = function(len) {

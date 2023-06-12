@@ -53,11 +53,8 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { 
     urls: urlDatabase,
-    // username: req.cookies["username"],
     user: users[req.cookies.user_id]
    };
-  //  console.log(req.cookies.user_id)
-  //  console.log(templateVars.user)
   res.render("urls_index", templateVars);
 });
 
@@ -70,6 +67,9 @@ app.get("/urls/new", (req, res) => {
 });
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
+  const templateVars = { 
+    user: users[req.cookies.user_id]
+   };
   let urlKey = generateRandomString(5);
   urlDatabase[urlKey] = req.body.longURL;
   res.redirect(`/urls/${urlKey}`);
@@ -101,7 +101,7 @@ app.get("/u/:id", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   console.log(`Deleting URL ${urlDatabase[req.params.id]}`);
   delete urlDatabase[req.params.id];
-  res.redirect(`/urls`);
+  res.redirect("/urls");
 });
 
 // Login function
@@ -109,18 +109,36 @@ app.get("/login", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
   }
+  console.log(req.params.id)
   res.render("login", templateVars);
 })
 app.post("/login", (req, res) => {
+  const userEmail = userLookup(req.body.email, users);
+  const password = req.body.password; // found in the req.body object
   const userId = users[req.cookies.user_id]
+  let tryEmail = req.body.email;
+  const user = Object.values(users).find(user => user.email === tryEmail);
+  if (!user) {
+    res.status(403).send(`User does not have an account. Please <a href="http://localhost:8080/register">register</a>. Thanks!`);
+  }
+  if (user.password !== req.body.password) {
+    res.status(403).send("Password is incorrect");
+  }
+  const templateVars = {
+    user: userEmail
+  }
+  console.log(userId)
   res.cookie("user_id", userId);
-  res.redirect(`/urls`);
+  res.redirect("/urls");
 });
+
+
+
 
 // Logout function
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id")
-  res.redirect(`/urls`);
+  res.redirect("/login");
 })
 
 // Registration function

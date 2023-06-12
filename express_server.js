@@ -13,8 +13,18 @@ const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
+  qfR2o1: {
+    longURL: "https://www.example.com",
+    userID: "o5r63n",
+  },
 };
 
 const users = {
@@ -27,6 +37,11 @@ const users = {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk",
+  },
+  o5r63n: {
+    id: "o5r63n",
+    email: "paul@chat.com",
+    password: "a",
   },
 };
 
@@ -55,8 +70,14 @@ app.get("/hello", (req, res) => {
 
 // Main page to display index of URLs
 app.get("/urls", (req, res) => {
+  const user_id = req.cookies.user_id;
+  filteredDatabase = urlsForUser(user_id);
+  console.log(filteredDatabase)
+  if (!req.cookies.user_id) {
+    res.status(400).send(`User must be logged in to view the URL list. Please log in <a href="http://localhost:8080/login">here</a>`);
+  }
   const templateVars = {
-    urls: urlDatabase,
+    urls: filteredDatabase,
     user: users[req.cookies.user_id]
   };
   res.render("urls_index", templateVars);
@@ -77,9 +98,11 @@ app.post("/urls", (req, res) => {
   if (!req.cookies.user_id) {
     res.status(400).send("User must be logged in to generate shortened URLs");
   } else {
-    console.log(req.body); // Log the POST request body to the console
+    console.log(req.cookies.user_id); // Log the POST request body to the console
     let urlKey = generateRandomString(5);
-    urlDatabase[urlKey] = req.body.longURL;
+    urlDatabase[urlKey] = {};
+    urlDatabase[urlKey].longURL = req.body.longURL;
+    urlDatabase[urlKey].userID = req.cookies.user_id;
     res.redirect(`/urls/${urlKey}`);
   }
 });
@@ -89,9 +112,16 @@ app.get("/urls/:id", (req, res) => {
   if (!urlDatabase[req.params.id]) {
     res.status(400).send("This shortened URL does not exist!");
   } else {
+    const id = req.params.id;
+    if (!req.cookies.user_id) {
+      res.status(400).send(`User must be logged in to view the URL list. Please log in <a href="http://localhost:8080/login">here</a>`);
+    }
+    if (req.cookies.user_id !== urlDatabase[id].userID) {
+      res.status(400).send(`You cannot access URLs which you have not registered yourself. Return to your URL list <a href="http://localhost:8080/urls">here</a>`);
+    }
     const templateVars = {
       id: req.params.id,
-      longURL: urlDatabase[req.params.id],
+      longURL: urlDatabase[id].longURL,
       user: users[req.cookies.user_id]
     };
     res.render("urls_show", templateVars);
@@ -100,25 +130,37 @@ app.get("/urls/:id", (req, res) => {
 // Update the longURL of a URL
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
-  urlDatabase[id] = req.body.updateURL;
+  urlDatabase[id].longURL = req.body.updateURL;
   res.redirect("/urls");
 });
 
 // Redirect users to the associated longURL when they go to the shortURL
 app.get("/u/:id", (req, res) => {
-  if (!urlDatabase[req.params.id]) {
-    res.status(400).send("This shortened URL does not exist!");
+  const id = req.params.id;
+  if (!urlDatabase[id]) {
+    res.status(400).send("This shortened URL does not exist! (or you forgot to add https!)");
   } else {
-    const longURL = urlDatabase[req.params.id];
+    const longURL = urlDatabase[id].longURL;
     res.redirect(longURL);
   }
 });
 
 // Delete URL
 app.post("/urls/:id/delete", (req, res) => {
-  console.log(`Deleting URL ${urlDatabase[req.params.id]}`);
+  const id = req.params.id;
+  if (!urlDatabase[req.params.id]) {
+    res.status(400).send("That shortened URL does not exist!");
+  }
+  if (!req.cookies.user_id) {
+    res.status(400).send("User must be logged in to delete URLs");
+  }
+  if (req.cookies.user_id !== urlDatabase[id].userID) {
+    res.status(400).send(`You cannot access URLs which you have not registered yourself.`);
+  } else {
+  console.log(`Deleting URL ${urlDatabase[id].longURL}`);
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
+  }
 });
 
 // Login function
@@ -207,6 +249,7 @@ const userLookup = function(userEmail, userRecords) {
   return null;
 };
 
+// Lookup helper which returns the user object (nested within 'users') if the provided email address is found within it
 const userIdLookup = function(userEmail, userRecords) {
   for (const user in userRecords) {
     if (userRecords[user].email === userEmail) {
@@ -214,4 +257,15 @@ const userIdLookup = function(userEmail, userRecords) {
     }
   }
   return null;
+};
+
+// Filters the URL list which the user is allowed access to (only shown their own assigned URLs)
+const urlsForUser = function(id) {
+  const filteredUrlList = {};
+  for (const url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      filteredUrlList[url] = urlDatabase[url];
+    }
+  }
+  return filteredUrlList;
 };

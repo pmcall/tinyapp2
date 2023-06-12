@@ -12,6 +12,9 @@ app.use(express.urlencoded({ extended: true }));
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
+// Password handing with bcypt
+const bcrypt = require("bcryptjs");
+
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -41,7 +44,7 @@ const users = {
   o5r63n: {
     id: "o5r63n",
     email: "paul@chat.com",
-    password: "a",
+    password: "$2a$10$u9BLDtzER0Ffq1TerM4Ot.7PKZH5D/0yrMypmgkGkDt5EA7G94lWW",
   },
 };
 
@@ -73,13 +76,13 @@ app.get("/urls", (req, res) => {
   const user_id = req.cookies.user_id;
   filteredDatabase = urlsForUser(user_id);
   console.log(filteredDatabase)
-  if (!req.cookies.user_id) {
-    res.status(400).send(`User must be logged in to view the URL list. Please log in <a href="http://localhost:8080/login">here</a>`);
-  }
   const templateVars = {
     urls: filteredDatabase,
     user: users[req.cookies.user_id]
   };
+  if (!req.cookies.user_id) {
+    res.status(400).send(`User must be logged in to view the URL list. Please log in <a href="http://localhost:8080/login">here</a>`);
+  }
   res.render("urls_index", templateVars);
 });
 
@@ -181,12 +184,15 @@ app.post("/login", (req, res) => {
   if (!user) {
     res.status(403).send(`User does not have an account. Please <a href="http://localhost:8080/register">register</a>. Thanks!`);
   }
-  if (user.password !== req.body.password) {
+  const password = req.body.password; // found in the req.body object
+  const hashedPassword = user.password;
+  if (bcrypt.compareSync(password, hashedPassword) === false) {
     res.status(403).send("Password is incorrect");
   }
   const userEmail = req.body.email;
   const selectedUser = userIdLookup(userEmail, users);
   const userId = selectedUser['id'];
+  console.log(`Signed in as ${selectedUser['email']}`)
   res.cookie("user_id", userId);
   res.redirect("/urls");
 });
@@ -207,8 +213,6 @@ app.get("/register", (req, res) => {
   } else {
     res.render("register", templateVars);
   }
-
-  // res.render("register", templateVars);
 });
 app.post("/register", (req, res) => {
   let inputEmail = req.body.email;
@@ -219,13 +223,13 @@ app.post("/register", (req, res) => {
     res.status(400).send("400 Error: This email is already registered");
     return;
   }
+  let hashedPassword = bcrypt.hashSync(req.body.password, 10);
   users[userId] = {};
   users[userId].id = userId;
   users[userId].email = req.body.email;
-  users[userId].password = req.body.password;
+  users[userId].password = hashedPassword;
   res.cookie("user_id", userId);
   res.redirect('/urls');
-  console.log(users);
 });
 
 // Function to generate a random string for ID purposes

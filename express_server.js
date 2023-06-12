@@ -38,10 +38,14 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// Display contents of the urlDatabase
+// Display contents of the urlDatabase & userlist
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
+app.get("/users.json", (req, res) => {
+  res.json(users);
+});
+
 
 // Return a friendly greeting to the user :)
 app.get("/hello", (req, res) => {
@@ -51,25 +55,22 @@ app.get("/hello", (req, res) => {
 
 // Main page to display index of URLs
 app.get("/urls", (req, res) => {
-  const templateVars = { 
+  const templateVars = {
     urls: urlDatabase,
     user: users[req.cookies.user_id]
-   };
+  };
   res.render("urls_index", templateVars);
 });
 
 // Get and POST for handling new URLs added by the user
 app.get("/urls/new", (req, res) => {
-  const templateVars = { 
+  const templateVars = {
     user: users[req.cookies.user_id]
-   };
+  };
   res.render("urls_new", templateVars);
 });
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
-  const templateVars = { 
-    user: users[req.cookies.user_id]
-   };
   let urlKey = generateRandomString(5);
   urlDatabase[urlKey] = req.body.longURL;
   res.redirect(`/urls/${urlKey}`);
@@ -77,11 +78,11 @@ app.post("/urls", (req, res) => {
 
 // Detailed page for individual URL
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { 
-    id: req.params.id, 
+  const templateVars = {
+    id: req.params.id,
     longURL: urlDatabase[req.params.id],
     user: users[req.cookies.user_id]
- };
+  };
   res.render("urls_show", templateVars);
 });
 // Update the longURL of a URL
@@ -108,14 +109,10 @@ app.post("/urls/:id/delete", (req, res) => {
 app.get("/login", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
-  }
-  console.log(req.params.id)
+  };
   res.render("login", templateVars);
-})
+});
 app.post("/login", (req, res) => {
-  const userEmail = userLookup(req.body.email, users);
-  const password = req.body.password; // found in the req.body object
-  const userId = users[req.cookies.user_id]
   let tryEmail = req.body.email;
   const user = Object.values(users).find(user => user.email === tryEmail);
   if (!user) {
@@ -124,30 +121,26 @@ app.post("/login", (req, res) => {
   if (user.password !== req.body.password) {
     res.status(403).send("Password is incorrect");
   }
-  const templateVars = {
-    user: userEmail
-  }
-  console.log(userId)
+  const userEmail = req.body.email;
+  const selectedUser = userIdLookup(userEmail, users);
+  const userId = selectedUser['id'];
   res.cookie("user_id", userId);
   res.redirect("/urls");
 });
 
-
-
-
 // Logout function
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id")
+  res.clearCookie("user_id");
   res.redirect("/login");
-})
+});
 
 // Registration function
 app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
-  }
+  };
   res.render("register", templateVars);
-})
+});
 app.post("/register", (req, res) => {
   let inputEmail = req.body.email;
   let userId = generateRandomString(5);
@@ -164,8 +157,7 @@ app.post("/register", (req, res) => {
   res.cookie("user_id", userId);
   res.redirect('/urls');
   console.log(users);
-  console.log(req.cookies)
-})
+});
 
 // Function to generate a random string for ID purposes
 const generateRandomString = function(len) {
@@ -178,11 +170,20 @@ const generateRandomString = function(len) {
   return idString;
 };
 
-// User Lookup helper 
+// User Lookup helper
 const userLookup = function(userEmail, userRecords) {
   for (const user in userRecords) {
     if (userRecords[user].email === userEmail) {
       return userRecords[user].email;
+    }
+  }
+  return null;
+};
+
+const userIdLookup = function(userEmail, userRecords) {
+  for (const user in userRecords) {
+    if (userRecords[user].email === userEmail) {
+      return userRecords[user];
     }
   }
   return null;

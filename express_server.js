@@ -110,7 +110,12 @@ app.get("/login", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
   };
-  res.render("login", templateVars);
+  // res.render("login", templateVars);
+  if (req.cookies.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.render("login", templateVars);
+  }
 });
 app.post("/login", (req, res) => {
   let tryEmail = req.body.email;
@@ -139,7 +144,13 @@ app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
   };
-  res.render("register", templateVars);
+  if (req.cookies.user_id) {
+    res.redirect("/urls");
+  } else {
+    res.render("register", templateVars);
+  }
+
+  // res.render("register", templateVars);
 });
 app.post("/register", (req, res) => {
   let inputEmail = req.body.email;

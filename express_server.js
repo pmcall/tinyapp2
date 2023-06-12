@@ -17,6 +17,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 app.get("/", (req, res) => {
   res.send(`Hello! Check out the main page <a href="http://localhost:8080/urls">here</a>`);
 });
@@ -40,15 +53,18 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { 
     urls: urlDatabase,
-    username: req.cookies["username"]
+    // username: req.cookies["username"],
+    user: users[req.cookies.user_id]
    };
+  //  console.log(req.cookies.user_id)
+  //  console.log(templateVars.user)
   res.render("urls_index", templateVars);
 });
 
 // Get and POST for handling new URLs added by the user
 app.get("/urls/new", (req, res) => {
   const templateVars = { 
-    username: req.cookies["username"]
+    user: users[req.cookies.user_id]
    };
   res.render("urls_new", templateVars);
 });
@@ -64,7 +80,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = { 
     id: req.params.id, 
     longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"]
+    user: users[req.cookies.user_id]
  };
   res.render("urls_show", templateVars);
 });
@@ -90,15 +106,41 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Login function
 app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie("username", username);
+  const userId = users[req.cookies.user_id]
+  res.cookie("user_id", userId);
   res.redirect(`/urls`);
 });
 
 // Logout function
 app.post("/logout", (req, res) => {
-  res.clearCookie("username")
+  res.clearCookie("user_id")
   res.redirect(`/urls`);
+})
+
+// Registration function
+app.get("/register", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies.user_id]
+  }
+  res.render("register", templateVars);
+})
+app.post("/register", (req, res) => {
+  let inputEmail = req.body.email;
+  let userId = generateRandomString(5);
+  if (req.body.email === "" || req.body.password === "") {
+    return;
+  } else if (userLookup(inputEmail, users) !== null) {
+    res.status(400).send("400 Error: This email is already registered");
+    return;
+  }
+  users[userId] = {};
+  users[userId].id = userId;
+  users[userId].email = req.body.email;
+  users[userId].password = req.body.password;
+  res.cookie("user_id", userId);
+  res.redirect('/urls');
+  console.log(users);
+  console.log(req.cookies)
 })
 
 // Function to generate a random string for ID purposes
@@ -110,4 +152,14 @@ const generateRandomString = function(len) {
     idString += alphaNum.charAt(Math.floor(Math.random() * idLength));
   }
   return idString;
+};
+
+// User Lookup helper 
+const userLookup = function(userEmail, userRecords) {
+  for (const user in userRecords) {
+    if (userRecords[user].email === userEmail) {
+      return userRecords[user].email;
+    }
+  }
+  return null;
 };

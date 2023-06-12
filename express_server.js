@@ -12,14 +12,14 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 
 //cookie session
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 app.use(cookieSession({
   name: 'session',
   keys: ["key1"],
 
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
+}));
 
 // Password handing with bcypt
 const bcrypt = require("bcryptjs");
@@ -83,8 +83,8 @@ app.get("/hello", (req, res) => {
 // Main page to display index of URLs
 app.get("/urls", (req, res) => {
   const user_id = req.session.user_id;
-  filteredDatabase = urlsForUser(user_id);
-  console.log(filteredDatabase)
+  const filteredDatabase = urlsForUser(user_id);
+  console.log(filteredDatabase);
   const templateVars = {
     urls: filteredDatabase,
     user: users[req.session.user_id]
@@ -169,9 +169,9 @@ app.post("/urls/:id/delete", (req, res) => {
   if (req.session.user_id !== urlDatabase[id].userID) {
     res.status(400).send(`You cannot access URLs which you have not registered yourself.`);
   } else {
-  console.log(`Deleting URL ${urlDatabase[id].longURL}`);
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls");
+    console.log(`Deleting URL ${urlDatabase[id].longURL}`);
+    delete urlDatabase[req.params.id];
+    res.redirect("/urls");
   }
 });
 
@@ -201,7 +201,7 @@ app.post("/login", (req, res) => {
   const userEmail = req.body.email;
   const selectedUser = userIdLookup(userEmail, users);
   const userId = selectedUser['id'];
-  console.log(`Signed in as ${selectedUser['email']}`)
+  console.log(`Signed in as ${selectedUser['email']}`);
   req.session.user_id = userId;
   res.redirect("/urls");
 });

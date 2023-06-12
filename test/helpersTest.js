@@ -4,27 +4,26 @@ const { assert } = require('chai');
 
 const testUsers = {
   "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+    id: "userRandomID",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
   "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
+    id: "user2RandomID",
+    email: "user2@example.com",
     password: "dishwasher-funk"
   }
 };
 
 describe('getUserByEmail', function() {
   it('should return a user with valid email', function() {
-    const user = userIdLookup("user@example.com", testUsers)
+    const user = userIdLookup("user@example.com", testUsers);
     const expectedUserID = "userRandomID";
     assert.equal(user, expectedUserID);
   });
   it('should return null if no user with that email exists', function() {
-    const user = userIdLookup("user1@example.com", testUsers)
-    const expectedUserID = "userRandomID";
-    assert.equal(user, null);  
+    const user = userIdLookup("user1@example.com", testUsers);
+    assert.equal(user, null);
   });
 });
 

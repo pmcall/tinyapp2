@@ -105,6 +105,12 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 // Login function
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies.user_id]
+  }
+  res.render("login", templateVars);
+})
 app.post("/login", (req, res) => {
   const userId = users[req.cookies.user_id]
   res.cookie("user_id", userId);

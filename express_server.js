@@ -67,13 +67,21 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.cookies.user_id]
   };
-  res.render("urls_new", templateVars);
+  if (req.cookies.user_id) {
+    res.render("urls_new", templateVars);
+  } else {
+    res.render("login", templateVars);
+  }
 });
 app.post("/urls", (req, res) => {
+  if (!req.cookies.user_id) {
+    res.status(400).send("User must be logged in to generate shortened URLs");
+  } else {
   console.log(req.body); // Log the POST request body to the console
   let urlKey = generateRandomString(5);
   urlDatabase[urlKey] = req.body.longURL;
   res.redirect(`/urls/${urlKey}`);
+  }
 });
 
 // Detailed page for individual URL

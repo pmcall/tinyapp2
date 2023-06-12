@@ -77,21 +77,25 @@ app.post("/urls", (req, res) => {
   if (!req.cookies.user_id) {
     res.status(400).send("User must be logged in to generate shortened URLs");
   } else {
-  console.log(req.body); // Log the POST request body to the console
-  let urlKey = generateRandomString(5);
-  urlDatabase[urlKey] = req.body.longURL;
-  res.redirect(`/urls/${urlKey}`);
+    console.log(req.body); // Log the POST request body to the console
+    let urlKey = generateRandomString(5);
+    urlDatabase[urlKey] = req.body.longURL;
+    res.redirect(`/urls/${urlKey}`);
   }
 });
 
 // Detailed page for individual URL
 app.get("/urls/:id", (req, res) => {
-  const templateVars = {
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id],
-    user: users[req.cookies.user_id]
-  };
-  res.render("urls_show", templateVars);
+  if (!urlDatabase[req.params.id]) {
+    res.status(400).send("This shortened URL does not exist!");
+  } else {
+    const templateVars = {
+      id: req.params.id,
+      longURL: urlDatabase[req.params.id],
+      user: users[req.cookies.user_id]
+    };
+    res.render("urls_show", templateVars);
+  }
 });
 // Update the longURL of a URL
 app.post("/urls/:id", (req, res) => {
@@ -102,8 +106,12 @@ app.post("/urls/:id", (req, res) => {
 
 // Redirect users to the associated longURL when they go to the shortURL
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  if (!urlDatabase[req.params.id]) {
+    res.status(400).send("This shortened URL does not exist!");
+  } else {
+    const longURL = urlDatabase[req.params.id];
+    res.redirect(longURL);
+  }
 });
 
 // Delete URL

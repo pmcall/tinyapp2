@@ -4,9 +4,9 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["More URLs than you can shake a stick at!"](https://github.com/pmcall/tinyapp2/blob/master/images/Screenshot%202023-06-12%20at%2016.29.04.png?raw=true)
-!["Log in to keep your shortURLs super secure and super secret!"](https://github.com/pmcall/tinyapp2/blob/master/images/Screenshot%202023-06-12%20at%2016.29.12.png?raw=true)
-!["Super strong cookies!"](https://github.com/pmcall/tinyapp2/blob/master/images/Screenshot%202023-06-12%20at%2016.29.53.png?raw=true)
+!["More URLs than you can shake a stick at!"](https://github.com/pmcall/tinyapp2/blob/master/docs/URL-list.png?raw=true)
+!["Log in to keep your shortURLs super secure and super secret!"](https://github.com/pmcall/tinyapp2/blob/master/docs/Login-page.png?raw=true)
+!["Super strong super secure cookies!"](https://github.com/pmcall/tinyapp2/blob/master/docs/Secure-Cookies.png?raw=true)
 
 
 ## Dependencies

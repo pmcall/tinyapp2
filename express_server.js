@@ -208,7 +208,7 @@ app.post("/login", (req, res) => {
 
 // Logout function
 app.post("/logout", (req, res) => {
-  req.session.user_id = null;
+  req.session = null
   res.redirect("/login");
 });
 
